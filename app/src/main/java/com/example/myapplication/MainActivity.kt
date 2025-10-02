@@ -14,8 +14,8 @@ import androidx.core.view.WindowInsetsCompat
 
 
 class MainActivity : AppCompatActivity() {
-    val username = "user"
-    val password = "123456"
+    val username = "123"
+    val password = "123"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
