@@ -1,5 +1,7 @@
 package com.example.myapplication
 
+import androidx.compose.animation.shrinkOut
+
 open class Calculator {
 
     private var firstOperand: Int? = null
@@ -24,6 +26,7 @@ open class Calculator {
         firstOperand = display.toIntOrNull()
         pendingOperator = operator
         isNewInput = true
+        display += operator
     }
 
     // 計算結果（?.let 寫法）
