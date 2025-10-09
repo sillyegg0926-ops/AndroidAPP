@@ -3,7 +3,10 @@ package com.example.myapplication
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -16,6 +19,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.scale
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -23,16 +27,25 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.adapter.MyAdapter
 import com.google.android.material.imageview.ShapeableImageView
+import java.io.File
+import java.io.FileOutputStream
+import java.io.InputStream
 
 class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
 
 
     private lateinit var profileImageView: ShapeableImageView
+    private lateinit var sharedPreferences: SharedPreferences
 
     // 常量定義，在 Kotlin 中通常放在 companion object 內
     companion object {
 
         const val PERMISSION_REQUEST_CODE = 100
+        const val PREFS_NAME = "MyAppPreferences"
+        const val KEY_PROFILE_IMAGE_PATH = "profile_image_path"
+        const val PROFILE_IMAGE_FILENAME = "profile_image.jpg"
+        const val IMAGE_MAX_SIZE = 800 // 最大寬度或高度
+        const val IMAGE_QUALITY = 85 // JPEG 壓縮品質 (0-100)
     }
 
     private val pickImageLauncher: ActivityResultLauncher<Intent> =
@@ -41,8 +54,14 @@ class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
                 val data: Intent? = result.data
                 val selectedImageUri: Uri? = data?.data
                 if (selectedImageUri != null) {
-                    profileImageView.setImageURI(selectedImageUri)
-                    Toast.makeText(this, "成功選擇圖片！", Toast.LENGTH_SHORT).show()
+                    // 複製並壓縮圖片到內部儲存空間
+                    if (saveImageToInternalStorage(selectedImageUri)) {
+                        // 載入已保存的圖片
+                        loadSavedImage()
+                        Toast.makeText(this, "成功選擇圖片！", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this, "儲存圖片失敗，請重試。", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
                     Toast.makeText(this, "無法取得圖片。", Toast.LENGTH_SHORT).show()
                 }
@@ -61,12 +80,12 @@ class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
+        sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         profileImageView = findViewById(R.id.ShapeableImageView)
         profileImageView.setOnClickListener {
             checkAndRequestStoragePermission()
         }
-
+        loadSavedImage()
         // 1. 準備固定的資料
         val myDataList = (1..50).map { "項目 $it" }
 
@@ -265,7 +284,100 @@ class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
                 startActivity(intent)
             }
         }
+    /**
+     * 將圖片保存到內部儲存空間（包含壓縮）
+     */
+    private fun saveImageToInternalStorage(uri: Uri): Boolean {
+        return try {
+            // 讀取原始圖片
+            val inputStream: InputStream? = contentResolver.openInputStream(uri)
+            val originalBitmap = BitmapFactory.decodeStream(inputStream)
+            inputStream?.close()
+
+            if (originalBitmap == null) {
+                return false
+            }
+
+            // 壓縮圖片
+            val compressedBitmap = compressImage(originalBitmap)
+
+            // 保存到內部儲存空間
+            val file = File(filesDir, PROFILE_IMAGE_FILENAME)
+            FileOutputStream(file).use { outputStream ->
+                compressedBitmap.compress(Bitmap.CompressFormat.JPEG, IMAGE_QUALITY, outputStream)
+            }
+
+            // 保存文件路徑到 SharedPreferences
+            sharedPreferences.edit().apply {
+                putString(KEY_PROFILE_IMAGE_PATH, file.absolutePath)
+                apply()
+            }
+
+            // 釋放 Bitmap 資源
+            if (originalBitmap != compressedBitmap) {
+                originalBitmap.recycle()
+            }
+
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
+
+
+    /**
+     * 壓縮圖片到指定大小
+     */
+    private fun compressImage(bitmap: Bitmap): Bitmap {
+        val width = bitmap.width
+        val height = bitmap.height
+
+        // 如果圖片已經夠小，直接返回
+        if (width <= IMAGE_MAX_SIZE && height <= IMAGE_MAX_SIZE) {
+            return bitmap
+        }
+
+        // 計算縮放比例
+        val scale = if (width > height) {
+            IMAGE_MAX_SIZE.toFloat() / width
+        } else {
+            IMAGE_MAX_SIZE.toFloat() / height
+        }
+
+        val newWidth = (width * scale).toInt()
+        val newHeight = (height * scale).toInt()
+
+        return bitmap.scale(newWidth, newHeight)
+    }
+
+
+    /**
+     * 從內部儲存空間載入已保存的圖片
+     */
+    private fun loadSavedImage() {
+        val savedPath = sharedPreferences.getString(KEY_PROFILE_IMAGE_PATH, null)
+        if (savedPath != null) {
+            val file = File(savedPath)
+            if (file.exists()) {
+                try {
+                    val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                    profileImageView.setImageBitmap(bitmap)
+                } catch (e: Exception) {
+                    // 如果載入失敗，顯示預設圖片
+                    profileImageView.setImageResource(R.mipmap.ic_launcher_round)
+                }
+            } else {
+                // 文件不存在，顯示預設圖片
+                profileImageView.setImageResource(R.mipmap.ic_launcher_round)
+            }
+        } else {
+            // 沒有保存的圖片，顯示預設圖片
+            profileImageView.setImageResource(R.mipmap.ic_launcher_round)
+        }
+    }
+
+}
 
 
 
