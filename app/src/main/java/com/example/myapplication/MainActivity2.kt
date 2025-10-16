@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.widget.Button
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -26,7 +27,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.adapter.MyAdapter
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.imageview.ShapeableImageView
+import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -58,15 +61,15 @@ class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
                     if (saveImageToInternalStorage(selectedImageUri)) {
                         // 載入已保存的圖片
                         loadSavedImage()
-                        Toast.makeText(this, "成功選擇圖片！", Toast.LENGTH_SHORT).show()
+                        showSnackbar("成功選擇圖片！", Snackbar.LENGTH_LONG)
                     } else {
-                        Toast.makeText(this, "儲存圖片失敗，請重試。", Toast.LENGTH_SHORT).show()
+                        showSnackbar( "儲存圖片失敗，請重試。", Snackbar.LENGTH_LONG)
                     }
                 } else {
-                    Toast.makeText(this, "無法取得圖片。", Toast.LENGTH_SHORT).show()
+                    showSnackbar( "無法取得圖片。", Snackbar.LENGTH_LONG)
                 }
             } else if (result.resultCode == Activity.RESULT_CANCELED) {
-                Toast.makeText(this, "取消選擇圖片。", Toast.LENGTH_SHORT).show()
+                showSnackbar("取消選擇圖片。", Snackbar.LENGTH_LONG)
             }
         }
 
@@ -80,6 +83,12 @@ class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        setupBackPressedHandler()
+
+
+
+
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         profileImageView = findViewById(R.id.ShapeableImageView)
         profileImageView.setOnClickListener {
@@ -376,6 +385,44 @@ class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
             profileImageView.setImageResource(R.mipmap.ic_launcher_round)
         }
     }
+
+    /**
+     * 設定返回鍵處理器
+     */
+    private fun setupBackPressedHandler() {
+
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                 dialog()// 關閉所有 Activity 並退出應用程式
+            }
+        }
+
+        onBackPressedDispatcher.addCallback(this, callback)
+
+
+    }
+    private fun dialog() {
+        val builder: AlertDialog.Builder = MaterialAlertDialogBuilder(this)
+        builder
+            .setMessage("確定要關閉程式")
+            .setTitle("程式即將關閉")
+            .setPositiveButton("確定") { dialog, which ->
+                finishAffinity() // Do something.
+            }
+            .setNegativeButton("離開") { dialog, which ->
+                dialog.dismiss() // Do something else.
+            }
+
+            .setCancelable(true)
+            .show()
+
+    }
+
+    private fun showSnackbar(message: String, duration: Int) {
+        val rootView = findViewById<android.view.View>(R.id.main)
+        Snackbar.make(rootView, message, duration).show()
+    }
+
 
 }
 

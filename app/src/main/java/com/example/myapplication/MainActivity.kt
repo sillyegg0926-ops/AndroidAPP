@@ -10,8 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.myapplication.MainActivity2.Companion.PREFS_NAME
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
-import com.google.android.material.imageview.ShapeableImageView
 
 
 
@@ -76,14 +76,15 @@ class MainActivity : AppCompatActivity() {
 
         val button2 = findViewById<Button>(R.id.button2)
         button2.setOnClickListener {
+            messagedialog()
 
-            if (editText1.text.toString().isEmpty() || editText2.text.toString().isEmpty()) {
-                Toast.makeText(this, "請輸入使用者名稱和密碼", Toast.LENGTH_LONG).show()
-                return@setOnClickListener
-            } else {
-                Toast.makeText(this, "註冊成功", Toast.LENGTH_LONG).show()
-
-            }
+//            if (editText1.text.toString().isEmpty() || editText2.text.toString().isEmpty()) {
+//                Toast.makeText(this, "請輸入使用者名稱和密碼", Toast.LENGTH_LONG).show()
+//                return@setOnClickListener
+//            } else {
+//                Toast.makeText(this, "註冊成功", Toast.LENGTH_LONG).show()
+//
+//            }
 
         }
 
@@ -91,6 +92,21 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+    private fun messagedialog() {
+
+        MaterialAlertDialogBuilder(this)
+
+            .setMessage("此功能尚未完成")
+            .setTitle("註冊功能正在開發中 請敬請期待")
+            .setPositiveButton("我不想知道") { dialog, which ->
+
+            }
+
+
+            .setCancelable(true)
+            .show()
+        }
+
 
 }
 
