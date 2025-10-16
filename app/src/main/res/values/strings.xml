@@ -44,4 +44,5 @@
     <string name="Button.remove">÷</string>
     <string name="Button.take">x</string>
     <string name="Button.equal">=</string>
+    <string name="checkbox">記住帳號</string>
 </resources>
