@@ -11,8 +11,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.myapplication.MainActivity2.Companion.PREFS_NAME
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-
-
+import com.google.android.material.snackbar.Snackbar
 
 
 class MainActivity : AppCompatActivity() {
@@ -65,9 +64,9 @@ class MainActivity : AppCompatActivity() {
 
                 val intent = Intent(this, MainActivity2::class.java)
                 startActivity(intent)
-                Toast.makeText(this, "登入成功", Toast.LENGTH_LONG).show()
+                showSnackbar("登入成功", Snackbar.LENGTH_LONG)
             } else {
-                Toast.makeText(this, "請輸入正確使用者名稱和密碼", Toast.LENGTH_LONG).show()
+                showSnackbar("請輸入正確使用者名稱和密碼", Snackbar.LENGTH_LONG)
             }
 
 
@@ -107,7 +106,10 @@ class MainActivity : AppCompatActivity() {
             .show()
         }
 
-
+    private fun showSnackbar(message: String, duration: Int) {
+        val rootView = findViewById<android.view.View>(R.id.main)
+        Snackbar.make(rootView, message, duration).show()
+    }
 }
 
 
