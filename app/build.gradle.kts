@@ -59,6 +59,11 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
 
+    // define a BOM and its version
+    implementation(platform("com.squareup.okhttp3:okhttp-bom:5.2.1"))
+// define any required OkHttp artifacts without version
+    implementation("com.squareup.okhttp3:okhttp")
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -19,7 +19,9 @@ class MyAdapter(private val myData: List<String>, private val onItemClickListene
     }
         // 2. 定義 ViewHolder，它會持有每個清單項目的 View
         class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-            val textView: TextView = itemView.findViewById(R.id.textView_title)
+            val currencyCodeText: TextView = itemView.findViewById(R.id.textView_title1)
+            val currencyNameText: TextView = itemView.findViewById(R.id.textView_title2)
+            val textView: TextView = itemView.findViewById(R.id.textView_title3)
         }
 
         // 3. 創建 ViewHolder

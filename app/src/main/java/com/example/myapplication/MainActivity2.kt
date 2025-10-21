@@ -33,6 +33,15 @@ import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.Response
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.IOException
+
 
 class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
 
@@ -42,6 +51,12 @@ class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
 
     // 常量定義，在 Kotlin 中通常放在 companion object 內
     companion object {
+        val client = OkHttpClient()
+
+        // 2. 建立 Request 物件
+        val request = Request.Builder()
+            .url("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/twd.json") // 替換為您的 API 網址
+            .build()
 
         const val PERMISSION_REQUEST_CODE = 100
         const val PREFS_NAME = "MyAppPreferences"
@@ -85,7 +100,7 @@ class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
         }
 
         setupBackPressedHandler()
-
+        getCurrencyData()
 
 
 
@@ -112,6 +127,7 @@ class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
             val intent = Intent(this, MainActivity3::class.java)
             startActivity(intent)
         }
+
 
     }
 
@@ -421,6 +437,40 @@ class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
     private fun showSnackbar(message: String, duration: Int) {
         val rootView = findViewById<android.view.View>(R.id.main)
         Snackbar.make(rootView, message, duration).show()
+    }
+
+    // 建議在 ViewModel 或 Repository 中執行網路請求
+
+    // 1. 建立 OkHttpClient 實例 (建議單例模式，提升效能)
+
+    // 3. 發送請求並處理回應
+    private fun getCurrencyData() {
+        client.newCall(request).enqueue(
+            object : Callback {
+                override fun onFailure(
+                    call: Call,
+                    e: IOException,
+                ) {
+                    println("failed: $e")
+                }
+
+                override fun onResponse(
+                    call: Call,
+                    response: Response,
+                ) {
+//                    println("response: ${response.code}")
+//                    response.close()
+                    try{
+                        val jsonObject = JSONObject(response.body.string())
+                        val value = JSONObject(jsonObject.getString("twd")).optDouble("jpy")
+                        println("response: $value")
+                    }catch (e: JSONException){
+                        e.printStackTrace()
+                    }
+                    response.close()
+                }
+            },
+        )
     }
 
 
