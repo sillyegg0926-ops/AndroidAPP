@@ -43,11 +43,20 @@ import org.json.JSONObject
 import java.io.IOException
 
 
-class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
 
+class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
 
     private lateinit var profileImageView: ShapeableImageView
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var recyclerView: RecyclerView
+
+    private lateinit var adapter: MyAdapter
+
+
+    private  var currencyDataClass = mutableListOf<CurrencyDataClas>()
+
+
+
 
     // 常量定義，在 Kotlin 中通常放在 companion object 內
     companion object {
@@ -111,16 +120,19 @@ class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
         }
         loadSavedImage()
         // 1. 準備固定的資料
-        val myDataList = (1..50).map { "項目 $it" }
+        recyclerView = findViewById(R.id.my_recycler_view)
+
 
         // 2. 找到 RecyclerView
-        val recyclerView: RecyclerView = findViewById(R.id.my_recycler_view)
+       recyclerView.layoutManager = LinearLayoutManager(this)
+
+
 
         // 3. 設定 LayoutManager
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        adapter = MyAdapter(currencyDataClass,this)
 
         // 4. 設定 Adapter
-        recyclerView.adapter = MyAdapter(myDataList, this)
+        recyclerView.adapter =adapter
 
         val buttonCal = findViewById<Button>(R.id.buttonCal)
         buttonCal.setOnClickListener {
@@ -461,9 +473,32 @@ class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
 //                    println("response: ${response.code}")
 //                    response.close()
                     try{
-                        val jsonObject = JSONObject(response.body.string())
-                        val value = JSONObject(jsonObject.getString("twd")).optDouble("jpy")
-                        println("response: $value")
+                        val responseBody = response.body?.string()
+                        if(responseBody != null) {
+                            val jsonObject = JSONObject(responseBody)
+                            val twdObject = jsonObject.getJSONObject("twd")
+
+                            currencyDataClass.clear()
+
+                            val currencyName = mapOf(
+                                "usd" to "美元",
+                                "eur" to "歐元",
+                                "jpy" to "日圓",
+                                "cny" to "人民幣",
+                                "hkd" to "港幣",
+                                "krw" to "韓元",
+                                "gbp" to "英鎊",
+                                "thb" to "泰幣",
+                            )
+                            for ((code, name) in currencyName) {
+                                if (twdObject.has(code)){
+                                    val textView = twdObject.getDouble(code)
+                                    currencyDataClass.add(CurrencyDataClas(code.uppercase(), name, textView))
+                                }
+                            }
+
+
+                        }
                     }catch (e: JSONException){
                         e.printStackTrace()
                     }
