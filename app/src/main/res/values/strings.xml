@@ -40,9 +40,11 @@
     <string name="Button0">0</string>
     <string name="Button.add">+</string>
     <string name="Button.reduce">-</string>
-    <string name="Button.clear">C</string>
+    <string name="Button.decimal_point">.</string>
     <string name="Button.remove">÷</string>
     <string name="Button.take">x</string>
     <string name="Button.equal">=</string>
     <string name="checkbox">記住帳號</string>
+    <string name="Button.clear">清除</string>
+
 </resources>

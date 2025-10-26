@@ -10,6 +10,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -41,7 +42,7 @@ import okhttp3.Response
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
-
+import java.util.Locale
 
 
 class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
@@ -143,20 +144,49 @@ class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
 
     }
 
-    override fun onItemClick(position: Int, item: String) {
-        Toast.makeText(this, "點擊了: $item (位置: $position)", Toast.LENGTH_SHORT).show()
+    override fun onItemClick(position: Int, item: CurrencyDataClas) {
+
+
+        showSnackbar("詳細匯率:${item.currencyCodeText} ${item.currencyNameText} ${item.currencyRate} ", Snackbar.LENGTH_LONG)
+//        Toast.makeText(this,"點擊了: $item (位置: $position)", Toast.LENGTH_SHORT).show()
     }
 
-    override fun onItemLongClick(position: Int, item: String) {
-        AlertDialog.Builder(this)
+    override fun onItemLongClick(position: Int, item: CurrencyDataClas) {
+        MaterialAlertDialogBuilder(this)
             .setTitle("選擇操作")
-            .setItems(arrayOf("編輯", "刪除")) { _, which ->
+            .setItems(arrayOf("查看詳情", "複製匯率")) { _, which ->
                 when (which) {
-                    0 -> editItem(position, item)
-                    1 -> deleteItem(position, item)
+                    0 -> showCurrencyDataClasils(item)
+                    1 -> copyReteToClipboard(item)
                 }
             }
             .show()
+    }
+
+
+    private fun showCurrencyDataClasils(item: CurrencyDataClas,) {
+
+        var reverseRate = 1.0 /item.currencyRate
+        reverseRate = String.format(Locale.getDefault(),"%.2f", reverseRate).toDouble()
+
+        MaterialAlertDialogBuilder(this)
+
+            .setTitle("詳細匯率")
+            .setMessage("貨幣代碼: ${item.currencyCodeText}\n貨幣名稱: ${item.currencyNameText}\n現在匯率: ${item.currencyRate} /${reverseRate}")
+            .setPositiveButton("確定"){dialog, which ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun copyReteToClipboard(itm: CurrencyDataClas) {
+        val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        val clip = android.content.ClipData.newPlainText("匯率", "${itm.currencyCodeText} ${itm.currencyRate}")
+        clipboard.setPrimaryClip(clip)
+        showSnackbar("已複製匯率到剪貼簿", Snackbar.LENGTH_LONG)
+
+
+
     }
 
 
@@ -478,29 +508,42 @@ class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
                             val jsonObject = JSONObject(responseBody)
                             val twdObject = jsonObject.getJSONObject("twd")
 
+                            Log.v("debug", "第一條訊息"+twdObject.toString())
+
                             currencyDataClass.clear()
 
                             val currencyName = mapOf(
-                                "usd" to "美元",
-                                "eur" to "歐元",
-                                "jpy" to "日圓",
-                                "cny" to "人民幣",
-                                "hkd" to "港幣",
-                                "krw" to "韓元",
-                                "gbp" to "英鎊",
-                                "thb" to "泰幣",
+                                "usd" to Pair("美元","🇺🇸"),
+                                "eur" to Pair("歐元", "🇪🇺"),
+                                "jpy" to Pair("日圓", "🇯🇵"),
+                                "cny" to Pair("人民幣", "🇨🇳"),
+                                "hkd" to Pair("港幣", "🇭🇰"),
+                                "krw" to Pair("韓元", "🇰🇷"),
+                                "gbp" to Pair("英鎊", "🇬🇧"),
+                                "thb" to Pair("泰幣", "🇨🇷"),
+                                "cad" to Pair("加拿大幣", "🇨🇦"),
+                                "sgd" to Pair("新加坡幣", "🇸🇬"),
+
+
                             )
                             for ((code, name) in currencyName) {
                                 if (twdObject.has(code)){
                                     val textView = twdObject.getDouble(code)
-                                    currencyDataClass.add(CurrencyDataClas(code.uppercase(), name, textView))
+                                    currencyDataClass.add(CurrencyDataClas(code.uppercase(), name.first, name.second, textView))
                                 }
                             }
+                            Log.v("debug", "第二條訊息"+currencyDataClass.toString())
 
+                            //更新UI
+                            runOnUiThread {
+                                adapter.notifyDataSetChanged()
+                                showSnackbar("已載入${currencyDataClass.size}", Snackbar.LENGTH_LONG)
+                            }
 
                         }
                     }catch (e: JSONException){
                         e.printStackTrace()
+
                     }
                     response.close()
                 }

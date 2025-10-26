@@ -7,14 +7,15 @@ package com.example.myapplication.adapter
     import androidx.recyclerview.widget.RecyclerView
     import com.example.myapplication.CurrencyDataClas
     import com.example.myapplication.R
+    import java.util.Locale
 
 // 1. 定義你的資料
 class MyAdapter(private val currencyDataClass: List<CurrencyDataClas>, private val onItemClickListener: OnItemClickListener? = null):
         RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
     interface OnItemClickListener {
-        fun onItemClick(position: Int, item: String)
-        fun onItemLongClick(position: Int, item: String)
+        fun onItemClick(position: Int, item: CurrencyDataClas)
+        fun onItemLongClick(position: Int, item: CurrencyDataClas)
         fun editItem(position: Int, item: String)
         fun deleteItem(position: Int, item: String)
     }
@@ -23,6 +24,7 @@ class MyAdapter(private val currencyDataClass: List<CurrencyDataClas>, private v
             val currencyCodeText: TextView = itemView.findViewById(R.id.textView_title1)
             val currencyNameText: TextView = itemView.findViewById(R.id.textView_title2)
             val textView: TextView = itemView.findViewById(R.id.textView_title3)
+            val nationalflag: TextView = itemView.findViewById(R.id.textView_title4)
         }
 
         // 3. 創建 ViewHolder
@@ -37,8 +39,15 @@ class MyAdapter(private val currencyDataClass: List<CurrencyDataClas>, private v
         // 當清單項目 View 準備好時，這個方法會被呼叫，將資料填入到 View 中
         override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
             holder.currencyCodeText.text = currencyDataClass[position].currencyCodeText
+            holder.nationalflag.text = currencyDataClass[position].nationalFlag
             holder.currencyNameText.text = currencyDataClass[position].currencyNameText
-            holder.textView.text = String.format("%.2f", currencyDataClass[position].textView)
+            //反向匯率
+            var reverseRate = 1.0 / currencyDataClass[position].currencyRate
+            reverseRate = String.format(Locale.getDefault(),"%.2f", reverseRate).toDouble()
+
+            holder.textView.text = "${String.format(Locale.getDefault(),"%.4f",currencyDataClass[position].currencyRate)}/${reverseRate}"
+            // 設置點擊監聽器
+
 
             holder.itemView.setOnClickListener {
                 onItemClickListener?.onItemClick(position, currencyDataClass[position])

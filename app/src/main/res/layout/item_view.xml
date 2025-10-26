@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+
     <TextView
         android:id="@+id/textView_title1"
         android:layout_width="wrap_content"
@@ -27,7 +28,7 @@
         android:textStyle="bold"
         tools:text="美元"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/textView_title1"
+        app:layout_constraintStart_toEndOf="@id/textView_title4"
         app:layout_constraintTop_toTopOf="parent"
         />
     <TextView
@@ -38,9 +39,21 @@
         android:textSize="18sp"
         android:textStyle="bold"
         android:textColor="#6666FF"
-        tools:text="31.2345"
+        tools:text="31.2345/30.1"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+    <TextView
+        android:id="@+id/textView_title4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dp"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:text="USD"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/textView_title1"
         app:layout_constraintTop_toTopOf="parent"
         />
 
