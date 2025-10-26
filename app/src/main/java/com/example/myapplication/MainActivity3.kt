@@ -45,6 +45,13 @@ class MainActivity3 : AppCompatActivity() {
             }
 
         }
+        findViewById<Button>(R.id.button14).setOnClickListener{
+
+            calculator.inputDecimal()
+            updateDisplay()
+
+        }
+
         findViewById<Button>(R.id.button16).setOnClickListener {onOperatorClick("+") }
         findViewById<Button>(R.id.button12).setOnClickListener {onOperatorClick("-") }
         findViewById<Button>(R.id.button8).setOnClickListener {onOperatorClick("×") }
@@ -56,13 +63,14 @@ class MainActivity3 : AppCompatActivity() {
         }
 
 
-        findViewById<Button>(R.id.button14).setOnClickListener {
+        findViewById<Button>(R.id.button17).setOnClickListener {
             calculator.clear()
             updateDisplay()
         }
         updateDisplay()
 
     }
+
     private fun updateDisplay() {
         displayText.text = calculator.display
     }
