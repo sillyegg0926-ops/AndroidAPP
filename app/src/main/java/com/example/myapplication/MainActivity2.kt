@@ -543,6 +543,8 @@ class MainActivity2 : AppCompatActivity() , MyAdapter.OnItemClickListener {
                         }
                     }catch (e: JSONException){
                         e.printStackTrace()
+                        runOnUiThread {
+                            showSnackbar("解析匯率表失敗", Snackbar.LENGTH_LONG) }
 
                     }
                     response.close()
